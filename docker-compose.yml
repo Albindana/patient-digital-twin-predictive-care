@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=reallyStrongPwd123
+    ports:
+      - "1433:1433"
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: src/Services/IdentityService/Dockerfile
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=IdentityDb;User Id=sa;Password=reallyStrongPwd123;TrustServerCertificate=True;
+    depends_on:
+      - mssql
+
+  gateway:
+    build:
+      context: .
+      dockerfile: src/Gateway/Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - identity-service
