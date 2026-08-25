@@ -1,32 +1,48 @@
-version: '3.8'
+version: "3.8"
+
 services:
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql-db
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=reallyStrongPwd123
+      - SA_PASSWORD=YourStrongPassword123!
     ports:
       - "1433:1433"
 
   mongodb:
     image: mongo:latest
+    container_name: mongodb-db
     ports:
       - "27017:27017"
 
   identity-service:
     build:
-      context: .
-      dockerfile: src/Services/IdentityService/Dockerfile
+      context: ./src/Services/IdentityService
+      dockerfile: Dockerfile
+    container_name: identity-service
     environment:
-      - ConnectionStrings__DefaultConnection=Server=mssql;Database=IdentityDb;User Id=sa;Password=reallyStrongPwd123;TrustServerCertificate=True;
+      - ConnectionStrings__DefaultConnection=Server=mssql,1433;Database=IdentityDb;User Id=sa;Password=reallyStrongPwd123;TrustServerCertificate=True;
+    depends_on:
+      - mssql
+
+  care-service:
+    build:
+      context: ./src/Services/CareService
+      dockerfile: Dockerfile
+    container_name: care-service
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mssql,1433;Database=CareDb;User Id=sa;Password=reallyStrongPwd123;TrustServerCertificate=True;
     depends_on:
       - mssql
 
   gateway:
     build:
-      context: .
-      dockerfile: src/Gateway/Dockerfile
+      context: ./src/Gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
     ports:
-      - "5000:5000"
+      - "5050:5000"
     depends_on:
       - identity-service
+      - care-service
