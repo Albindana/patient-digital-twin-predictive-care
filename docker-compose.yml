@@ -47,6 +47,16 @@ services:
     depends_on:
       - mongodb
 
+  billing-service:
+    build:
+      context: ./src/Services/BillingService
+      dockerfile: Dockerfile
+    container_name: billing-service
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mssql,1433;Database=BillingDb;User Id=sa;Password=YourStrongPassword123!;TrustServerCertificate=True;
+    depends_on:
+      - mssql
+
   gateway:
     build:
       context: ./src/Gateway
