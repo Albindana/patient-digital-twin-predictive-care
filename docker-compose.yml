@@ -35,6 +35,17 @@ services:
       - ConnectionStrings__DefaultConnection=Server=mssql,1433;Database=CareDb;User Id=sa;Password=reallyStrongPwd123;TrustServerCertificate=True;
     depends_on:
       - mssql
+      
+  telemetry-service:
+    build:
+      context: ./src/Services/TelemetryService
+      dockerfile: Dockerfile
+    container_name: telemetry-service
+    environment:
+      - ConnectionStrings__MongoConnection=mongodb://mongodb:27017
+      - ConnectionStrings__DatabaseName=TelemetryDb
+    depends_on:
+      - mongodb
 
   gateway:
     build:
