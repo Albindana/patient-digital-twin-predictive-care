@@ -20,14 +20,22 @@ public class TelemetryController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> IngestTelemetry([FromBody] TelemetryLog log)
     {
-        // 1. Save high-frequency raw JSON log to MongoDB[cite: 1, 2]
-        await _telemetryCollection.InsertOneAsync(log);
-
+        Console.WriteLine($"[API HIT] Received Vitals - HR: {log.HeartRate}, O2: {log.OxygenLevel}");
+        try
+        {
+            // 1. Save high-frequency raw JSON log to MongoDB[cite: 1, 2]
+            await _telemetryCollection.InsertOneAsync(log);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"MongoDb ingestion error: {ex.Message}");
+            return StatusCode(500, "Db connection error");
+        }
         // 2. Evaluate rules / thresholds for anomalies (e.g., Heart Rate > 120 or Oxygen < 90)
         if (log.HeartRate > 120 || log.OxygenLevel < 90.0)
         {
             // 3. Push real-time alert via SignalR to connected doctor/nurse dashboards[cite: 1, 2]
-            await _hubContext.Clients.Group(log.PatientId.ToString()).SendAsync("ReceiveCriticalAlert", new
+            await _hubContext.Clients.All.SendAsync("ReceiveCriticalAlert", new
             {
                 Message = $"CRITICAL VITAL ANOMALY DETECTED!",
                 log.PatientId,
