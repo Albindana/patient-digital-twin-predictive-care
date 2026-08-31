@@ -46,7 +46,7 @@ public class TelemetryController : ControllerBase
         }
 
         // Always broadcast live telemetry update for live charts
-        await _hubContext.Clients.Group(log.PatientId.ToString()).SendAsync("ReceiveTelemetryUpdate", log);
+        await _hubContext.Clients.All.SendAsync("ReceiveTelemetryUpdate", log);
 
         return Ok(new { Status = "Logged and evaluated successfully" });
     }

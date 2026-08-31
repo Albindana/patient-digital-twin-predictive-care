@@ -13,6 +13,27 @@ export default function App() {
       .withAutomaticReconnect()
       .build();
 
+//       const startConnection = async () => {
+//     try {
+//       await connection.start();
+//       console.log("Connected to Telemetry SignalR Hub");
+//     } catch (err) {
+//       // Ignore the strict mode abort error during quick unmounts
+//       if (err.message && err.message.includes("stopped during negotiation")) {
+//         console.warn("SignalR connection aborted due to component unmount.");
+//       } else {
+//         console.error("SignalR Connection Error: ", err);
+//       }
+//     }
+//   };
+
+//   startConnection();
+
+//   return () => {
+//     // Ensure the connection stops when the component unmounts
+//     connection.stop();
+//   };
+// }, []);
     connection.start()
       .then(() => {
         console.log("Connected to Telemetry SignalR Hub");
@@ -26,6 +47,7 @@ export default function App() {
 
     // 3. Listen for critical health alerts
     connection.on("ReceiveCriticalAlert", (alertData) => {
+      console.log("Normal update received:", data);
       setAlert(alertData);
     });
 
