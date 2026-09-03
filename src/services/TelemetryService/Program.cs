@@ -5,8 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using TelemetryService.Data;
 var builder = WebApplication.CreateBuilder(args);
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 builder.Services.AddDbContext<TelemetryDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(connectionString));
 
 // 1. Safe MongoDB Registration with Fallback
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoConnection")
@@ -42,6 +45,12 @@ builder.Services.AddHttpClient();
 builder.Services.AddHostedService<IoTSimulatorWorker>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<TelemetryDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Enable CORS Middleware
 app.UseCors();
