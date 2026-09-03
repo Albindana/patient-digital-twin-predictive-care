@@ -1,8 +1,12 @@
 using MongoDB.Driver;
 using TelemetryService.BackgroundWorkers;
 using TelemetryService.Hubs;
-
+using Microsoft.EntityFrameworkCore;
+using TelemetryService.Data;
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<TelemetryDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 1. Safe MongoDB Registration with Fallback
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoConnection")
